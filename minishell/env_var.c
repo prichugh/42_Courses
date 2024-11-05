@@ -1,14 +1,14 @@
 #include "minishell.h"
 
-char *get_env_variable(char *var_name, t_shell_state *shell_state)
+char *get_env_variable(char *var_name, t_data *data)
 {
 	char *exit_status_str;
 	char *env_value;
 
 	if (strcmp(var_name, "?") == 0) // ADD MY OWN STRCMP
 	{
-		exit_status_str = malloc(12);
-		sprintf(exit_status_str, "%d", shell_state->last_exit_status); //cannot use sprintf!!!
+		exit_status_str = malloc(12);//set to correct exit status
+		exit_status_str = ft_itoa(data->last_exit_status);
 		return exit_status_str;
 	}
 	env_value = getenv(var_name);
@@ -17,7 +17,10 @@ char *get_env_variable(char *var_name, t_shell_state *shell_state)
 	return (ft_strdup(env_value));
 }
 
-char	*replace_variables_in_string(char *input, t_shell_state *shell_state)
+//itterate throug and copy input string. If a $ sign is encountertered
+//it will be replaced by its appropiate enviornment variable while the
+//rest of the new string remains the same.
+char	*replace_variables_in_string(char *input, t_data *data)
 {
 	char result[1024] = {0};  // Buffer to store the final result
 	int res_index;
@@ -36,11 +39,9 @@ char	*replace_variables_in_string(char *input, t_shell_state *shell_state)
 			while (ft_isalnum(input[i]) || input[i] == '_')
 				var_name[var_index++] = input[i++];
 			var_name[var_index] = '\0';
-
-            // Get the environment variable value
-            char *var_value = get_env_variable(var_name, shell_state);
-			// if (!var_value)
-			// 	var_value = "";
+			char *var_value = get_env_variable(var_name, data);
+			if (!var_value)
+				var_value = "";
 			strcpy(result + res_index, var_value); //ADD MY OWN STRCPY!!
 			res_index += ft_strlen(var_value);
 			free(var_value);
@@ -52,16 +53,18 @@ char	*replace_variables_in_string(char *input, t_shell_state *shell_state)
 	return ft_strdup(result);
 }
 
-
-void replace_env_variables_in_tokens(t_token *tokens, t_shell_state *shell_state)
+//itterate through the list of tokens looking for WORD tokens. Call replace_variables_in_string
+//on those tokens.
+void replace_env_variables_in_tokens(t_token *tokens, t_data *data)
 {
 	char *new_value;
 
 	while (tokens)
 	{
+		printf("testing\n");
 		if (tokens->type == TOKEN_WORD)
 		{
-			new_value = replace_variables_in_string(tokens->value, shell_state);
+			new_value = replace_variables_in_string(tokens->value, data);
 			if (new_value != tokens->value) // Only free if they are different
 			{
 				free(tokens->value);

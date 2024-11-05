@@ -1,13 +1,12 @@
 #include "minishell.h"
 
-void	start_program()
+void	start_program(t_data *data)
 {
 	char			*input;
-	//t_token			*tokens;
-	t_shell_state	shell_state = {0}; //REDUCE TO ONE STRUCT!!!
-	t_tokenizer 	data;
+	t_token			*tokens;
 
-	signal(SIGINT, handle_sigint); // Set the signal handler for ctrl+c
+	tokens = data->head;
+	signal(SIGINT, handle_sigint); // Set the signal handler for ctrl+c, ctrl+d, and ctr+\"
 	while (1)
 	{
 		input = readline(">>> "); //readline caues mem leaks
@@ -23,21 +22,19 @@ void	start_program()
 		}
 		if (input && *input)
 			add_history(input);  //add_history causes mem leaks
-		//t_command command = {NULL, NULL}; // Initialize command structure
-		if (validate_input(input))
+		reset_data(data);
+		tokenize(input, data);
+		if (validate_input(data->head))
 		{
-			tokenize(input, &data);
-			if (data.head)
-			{
-				//classify_token_types(data.head);
-				replace_env_variables_in_tokens(data.head, &shell_state);
-				print_tokens(data.head);
-				free_tokens(data.head);
-			}
+			//classify_token_types(data->head); NEXT STEPS
+			replace_env_variables_in_tokens(tokens, data);
+			print_tokens(data->head);
+			free_tokens(data->head);
 		}
 		free(input);
 	}
-	clear_history();
+	clear_history();//make sure toe use the better one (this vs next line)
+	rl_clear_history();//make sure to use the better one
 }
 
 //void	start_program()

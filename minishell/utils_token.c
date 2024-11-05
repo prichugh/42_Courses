@@ -45,7 +45,11 @@ void print_tokens(t_token *token_list)
         current = current->next;
     }
 }
-
+void	free_envlst(t_env *lst)
+{
+	(void)lst;
+}
+//free's a linked list
 void free_tokens(t_token *head)
 {
 	t_token	*temp;
@@ -59,448 +63,73 @@ void free_tokens(t_token *head)
 		free(temp);
 	}
 }
-// int validate_input(const char *input)
-// {
-//     for (int i = 0; input[i] != '\0'; i++) {
-//         if ((input[i] == '<' || input[i] == '>') && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c|'\n", input[i]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '|%c'\n", input[i + 1]);
-//             return 0;
-//         }
-//     }
-//     return 1;
-// }
-// int validate_input(const char *input) {
-//     int i = 0;
-//     int length = strlen(input);
+//Make preliminary checks on input. Ensure operators (|, <<, >) are not next to
+//eachother. That input doesn't start or end with an operator, that operator are
+//not next to eachother and check for missing args after operators. Error msgs
+//are incoorect for testing purposes but need to be updated to match bash!!
+int	validate_input(t_token *tokens)
+ {
+    t_token *current = tokens;
+    int token_count = 0;
 
-//     // Check for empty input
-//     if (length == 0) {
-//         fprintf(stderr, "Syntax error: Empty input\n");
-//         return 0;
-//     }
-
-//     // Check for operators at the start or end
-//     if (input[0] == '|' || input[0] == '<' || input[0] == '>' ||
-//         input[length - 1] == '|' || input[length - 1] == '<' ||
-//         input[length - 1] == '>') {
-//         fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
-//         return 0;
-//     }
-
-//     while (i < length) {
-//         // Check for invalid sequences
-//         if ((input[i] == '<' || input[i] == '>') && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c|'\n", input[i]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '|%c'\n", input[i + 1]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && (input[i + 1] == '|' || input[i + 1] == '|')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '||'\n");
-//             return 0;
-//         }
-
-//         // Check for multiple consecutive operators
-//         if ((input[i] == '<' || input[i] == '>') && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c%c'\n", input[i], input[i + 1]);
-//             return 0;
-//         }
-
-//         // Check for missing arguments after redirection operators
-//         if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-//             fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
-//             return 0;
-//         }
-
-//         // Check for space before a pipe or redirection operator
-//         if (i > 0 && isspace(input[i]) && (input[i + 1] == '|' || input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Space before operator '%c'\n", input[i + 1]);
-//             return 0;
-//         }
-
-//         // Check for space after a pipe or redirection operator
-//         if (i < length - 1 && (input[i] == '|' || input[i] == '<' || input[i] == '>') && isspace(input[i + 1])) {
-//             fprintf(stderr, "Syntax error: Space after operator '%c'\n", input[i]);
-//             return 0;
-//         }
-
-//         i++; // Increment the index
-//     }
-
-//     return 1; // All checks passed, input is valid
-// }
-
-// int validate_input(const char *input) {
-//     int i = 0;
-//     int length = strlen(input);
-
-//     // Check for empty input
-//     if (length == 0) {
-//         fprintf(stderr, "Syntax error: Empty input\n");
-//         return 0;
-//     }
-
-//     // Check for operators at the start or end
-//     if (input[0] == '|' || input[0] == '<' || input[0] == '>' ||
-//         input[length - 1] == '|' || input[length - 1] == '<' ||
-//         input[length - 1] == '>') {
-//         fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
-//         return 0;
-//     }
-
-//     while (i < length) {
-//         // Skip spaces to focus on meaningful characters
-//         while (i < length && isspace(input[i])) i++;
-
-//         // Check for invalid operator sequences
-//         if ((input[i] == '<' || input[i] == '>') && (input[i + 1] == '|')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c|'\n", input[i]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '|%c'\n", input[i + 1]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '||'\n");
-//             return 0;
-//         }
-
-//         // Check for consecutive redirection operators without intermediate text
-//         if ((input[i] == '<' || input[i] == '>') && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c%c'\n", input[i], input[i + 1]);
-//             return 0;
-//         }
-
-//         // Check for missing arguments after a redirection operator
-//         if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-//             // Ensure there's a non-space argument after the operator
-//             int j = i + 1;
-//             while (j < length && isspace(input[j])) j++;
-//             if (j == length || input[j] == '|' || input[j] == '<' || input[j] == '>') {
-//                 fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
-//                 return 0;
-//             }
-//         }
-
-//         // Check for space before an operator
-//         if (i > 0 && isspace(input[i - 1]) && (input[i] == '|' || input[i] == '<' || input[i] == '>')) {
-//             fprintf(stderr, "Syntax error: Space before operator '%c'\n", input[i]);
-//             return 0;
-//         }
-
-//         i++; // Move to the next character
-//     }
-
-//     return 1; // Input passed validation
-// }
-
-// #include <stdio.h>
-// #include <string.h>
-// #include <ctype.h>
-
-// int validate_input(const char *input) {
-//     int i = 0;
-//     int length = strlen(input);
-
-//     // Check for empty input
-//     if (length == 0) {
-//         fprintf(stderr, "Syntax error: Empty input\n");
-//         return 0;
-//     }
-
-//     // Check for invalid operators at the start or end
-//     if (input[0] == '|' || input[length - 1] == '|' ||
-//         input[length - 1] == '<' || input[length - 1] == '>') {
-//         fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
-//         return 0;
-//     }
-
-//     while (i < length) {
-//         // Skip spaces to focus on meaningful characters
-//         while (i < length && isspace(input[i])) i++;
-
-//         // Check for invalid operator sequences
-//         if ((input[i] == '<' || input[i] == '>') && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c|'\n", input[i]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '|%c'\n", input[i + 1]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '||'\n");
-//             return 0;
-//         }
-
-//         // Check for consecutive redirection operators without intermediate text
-//         if ((input[i] == '<' || input[i] == '>') && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c%c'\n", input[i], input[i + 1]);
-//             return 0;
-//         }
-
-//         // Check for missing arguments after a redirection operator
-//         if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-//             // Ensure there's a non-space argument after the operator
-//             int j = i + 1;
-//             while (j < length && isspace(input[j])) j++;
-//             if (j == length || input[j] == '|' || input[j] == '<' || input[j] == '>') {
-//                 fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
-//                 return 0;
-//             }
-//         }
-
-//         // Check for space before an operator, e.g., "< command > " with no command in between
-//         if (i > 0 && isspace(input[i - 1]) && (input[i] == '|' || input[i] == '<' || input[i] == '>')) {
-//             fprintf(stderr, "Syntax error: Space before operator '%c'\n", input[i]);
-//             return 0;
-//         }
-
-//         i++; // Move to the next character
-//     }
-
-//     return 1; // Input passed validation
-// }
-// int validate_input(const char *input) {
-//     int i = 0;
-//     int length = strlen(input);
-
-//     // Check for empty input
-//     if (length == 0) {
-//         fprintf(stderr, "Syntax error: Empty input\n");
-//         return 0;
-//     }
-
-//     // Check for invalid operators at the start or end
-//     if (input[0] == '|' || input[length - 1] == '|' ||
-//         input[length - 1] == '<' || input[length - 1] == '>') {
-//         fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
-//         return 0;
-//     }
-
-//     while (i < length) {
-//         // Skip spaces to focus on meaningful characters
-//         while (i < length && isspace(input[i])) i++;
-
-//         // Check for invalid operator sequences like "<|", "|<", "||"
-//         if ((input[i] == '<' || input[i] == '>') && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c|'\n", input[i]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '|%c'\n", input[i + 1]);
-//             return 0;
-//         }
-//         if (input[i] == '|' && input[i + 1] == '|') {
-//             fprintf(stderr, "Syntax error: Invalid sequence '||'\n");
-//             return 0;
-//         }
-
-//         // Check for consecutive redirection operators without intermediate text
-//         if ((input[i] == '<' || input[i] == '>') && (input[i + 1] == '<' || input[i + 1] == '>')) {
-//             fprintf(stderr, "Syntax error: Invalid sequence '%c%c'\n", input[i], input[i + 1]);
-//             return 0;
-//         }
-
-//         // Check for missing arguments after a redirection operator
-//         if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-//             // Ensure there's a non-space argument after the operator
-//             int j = i + 1;
-//             while (j < length && isspace(input[j])) j++;
-//             if (j == length || input[j] == '|' || input[j] == '<' || input[j] == '>') {
-//                 fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
-//                 return 0;
-//             }
-//         }
-
-//         i++; // Move to the next character
-//     }
-
-//     return 1; // Input passed validation
-// }
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-
-// int validate_input(const char *input) {
-//     int i = 0;
-//     int length = strlen(input);
-
-//     // Check for empty or whitespace-only input
-//     while (i < length && isspace(input[i])) i++;
-//     if (i == length) {
-//         fprintf(stderr, "Syntax error: Empty or whitespace-only input\n");
-//         return 0;
-//     }
-//     i = 0; // Reset i after checking for whitespace-only input
-
-//     // Check for invalid operators at the start or end
-//     if (input[0] == '|' || input[length - 1] == '|' ||
-//         input[0] == '<' || input[0] == '>' ||
-//         input[length - 1] == '<' || input[length - 1] == '>') {
-//         fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
-//         return 0;
-//     }
-
-//     while (i < length) {
-//         // Skip spaces to focus on meaningful characters
-//         while (i < length && isspace(input[i])) i++;
-
-//         // Check for invalid consecutive or spaced operators
-//         if ((input[i] == '<' || input[i] == '>' || input[i] == '|')) {
-//             char op = input[i];
-//             int j = i + 1;
-
-//             // Skip spaces after the operator
-//             while (j < length && isspace(input[j])) j++;
-
-//             // Check if the next character is another operator
-//             if (j < length && (input[j] == '<' || input[j] == '>' || input[j] == '|')) {
-//                 fprintf(stderr, "Syntax error: Invalid sequence '%c %c'\n", op, input[j]);
-//                 return 0;
-//             }
-//         }
-
-//         // Check for missing arguments after a redirection operator
-//         if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-//             // Ensure there's a non-space argument after the operator
-//             int j = i + 1;
-//             while (j < length && isspace(input[j])) j++;
-//             if (j == length || input[j] == '|' || input[j] == '<' || input[j] == '>') {
-//                 fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
-//                 return 0;
-//             }
-//         }
-
-//         i++; // Move to the next character
-//     }
-
-//     return 1; // Input passed validation
-// }
-
-// int validate_input(const char *input) {
-//     int i = 0;
-//     int length = strlen(input);
-
-//     // Check for empty or whitespace-only input
-//     while (i < length && isspace(input[i])) i++;
-//     if (i == length) {
-//         return 1; // Return empty prompt for whitespace-only input
-//     }
-//     i = 0; // Reset i after checking for whitespace-only input
-
-//     // Check for invalid operators at the start or end
-//     if (input[0] == '|' || input[length - 1] == '|' ||
-//         input[0] == '<' || input[0] == '>' ||
-//         input[length - 1] == '<' || input[length - 1] == '>') {
-//         fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
-//         return 0;
-//     }
-
-//     while (i < length) {
-//         // Skip spaces to focus on meaningful characters
-//         while (i < length && isspace(input[i])) i++;
-
-//         // Check for invalid consecutive or spaced operators
-//         if ((input[i] == '<' || input[i] == '>' || input[i] == '|')) {
-//             char op = input[i];
-//             int j = i + 1;
-
-//             // Skip spaces after the operator
-//             while (j < length && isspace(input[j])) j++;
-
-//             // Check if the next character is another operator, but allow valid chaining
-//             if (j < length && (input[j] == '<' || input[j] == '>' || input[j] == '|')) {
-//                 // Allow valid redirection chains
-//                 if ((op == '>' && input[j] == '>') || (op == '<' && input[j] == '<')) {
-//                     i = j; // Move past this valid operator sequence
-//                     continue;
-//                 }
-//                 fprintf(stderr, "Syntax error: Invalid sequence '%c %c'\n", op, input[j]);
-//                 return 0;
-//             }
-//         }
-
-//         // Check for missing arguments after a redirection operator
-//         if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-//             // Ensure there's a non-space argument after the operator
-//             int j = i + 1;
-//             while (j < length && isspace(input[j])) j++;
-//             if (j == length || input[j] == '|' || input[j] == '<' || input[j] == '>') {
-//                 fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
-//                 return 0;
-//             }
-//         }
-
-//         i++; // Move to the next character
-//     }
-
-//     return 1; // Input passed validation
-// }
-
-int validate_input(const char *input) {
-    int i = 0;
-    int length = strlen(input);
-
-    // Check for empty or whitespace-only input
-    while (i < length && ft_isspace(input[i])) i++;
-    if (i == length) {
-        return 1; // Return empty prompt for whitespace-only input
+    // Check for empty input (null or no tokens)
+    if (!current) {
+        return 1; // Empty prompt for no tokens
     }
-    i = 0; // Reset i after checking for whitespace-only input
 
-    // Check for invalid operators at the start or end
-    if (input[0] == '|' || input[length - 1] == '|' ||
-        input[0] == '<' || input[0] == '>' ||
-        input[length - 1] == '<' || input[length - 1] == '>') {
-        fprintf(stderr, "Syntax error: Operator at the start or end of input\n");
+    // Check if the first token is an operator
+    if (current->value[0] == '|' || current->value[0] == '<' || current->value[0] == '>') {
+        fprintf(stderr, "Syntax error: Operator at the start of input\n");
         return 0;
     }
 
-    while (i < length) {
-        // Skip spaces to focus on meaningful characters
-        while (i < length && isspace(input[i])) i++;
+    while (current) {
+        token_count++;
 
-        // Check for invalid consecutive or spaced operators
-        if ((input[i] == '<' || input[i] == '>' || input[i] == '|')) {
-            char op = input[i];
-            int j = i + 1;
-
-            // Skip spaces after the operator
-            while (j < length && isspace(input[j])) j++;
-
-            // Check if the next character is another operator, but allow valid chaining
-            if (j < length && (input[j] == '<' || input[j] == '>' || input[j] == '|')) {
+        // Check for invalid consecutive operators
+        if ((current->value[0] == '<' || current->value[0] == '>' || current->value[0] == '|'))
+		{
+            if (current->next && (current->next->value[0] == '<' || current->next->value[0] == '>' || current->next->value[0] == '|'))
+			{
                 // Allow valid redirection chains
-                if ((op == '>' && input[j] == '>') || (op == '<' && input[j] == '<')) {
-                    i = j; // Move past this valid operator sequence
-                    continue;
+                if (!(current->value[0] == '>' && current->next->value[0] == '>') &&
+                    !(current->value[0] == '<' && current->next->value[0] == '<'))
+				{
+                    printf("syntax error Invalid sequence '%s %s'\n", current->value, current->next->value);
+                    return 0;
                 }
-                fprintf(stderr, "Syntax error: Invalid sequence '%c %c'\n", op, input[j]);
-                return 0;
             }
         }
 
         // Check for missing arguments after a redirection operator
-        if ((input[i] == '<' || input[i] == '>') && (i == length - 1 || isspace(input[i + 1]))) {
-            // Ensure there's a non-space argument after the operator
-            int j = i + 1;
-            while (j < length && isspace(input[j])) j++;
-            if (j == length || input[j] == '|' || input[j] == '<' || input[j] == '>') {
-                fprintf(stderr, "Syntax error: Missing argument after '%c'\n", input[i]);
+        if ((current->value[0] == '<' || current->value[0] == '>'))
+		{
+            if (!current->next || !current->next->value[0]
+				|| current->next->value[0] == '|'
+				|| current->next->value[0] == '<'
+				|| current->next->value[0] == '>')
+			{
+                printf("syntax error Missing argument after '%s'\n", current->value);
                 return 0;
             }
         }
 
-        i++; // Move to the next character
+        current = current->next; // Move to the next token
     }
 
-    return 1; // Input passed validation
+    // Check if the last token is an operator
+    if (tokens)
+	{
+        t_token *last = tokens;
+        while (last->next) {
+            last = last->next;
+        }
+        if (last->value[0] == '|' || last->value[0] == '<' || last->value[0] == '>')
+		{
+            printf("Syntax error: Operator at the end of input\n");
+            return 0;
+        }
+    }
+
+    return (1); // Input passed validation
 }
