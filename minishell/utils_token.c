@@ -1,5 +1,7 @@
 #include "minishell.h"
 
+// Trims leading and trailing whitespace from a given string.
+// Returns a pointer to the trimmed portion of the original string.
 char *trim_whitespace(char *str)
 {
 	int	start;
@@ -15,6 +17,7 @@ char *trim_whitespace(char *str)
 	return (&str[start]);
 }
 
+// For testing: prints each token in the linked list along with its type.
 void print_tokens(t_token *token_list)
 {
     t_token *current = token_list;
@@ -49,7 +52,7 @@ void	free_envlst(t_env *lst)
 {
 	(void)lst;
 }
-//free's a linked list
+// Frees all nodes in a linked list of tokens
 void free_tokens(t_token *head)
 {
 	t_token	*temp;
@@ -65,59 +68,51 @@ void free_tokens(t_token *head)
 }
 //Make preliminary checks on input. Ensure operators (|, <<, >) are not next to
 //eachother. That input doesn't start or end with an operator, that operator are
-//not next to eachother and check for missing args after operators. Error msgs
-//are incoorect for testing purposes but need to be updated to match bash!!
+//not next to eachother and check for missing args after operators. Current Error
+//msgs are incoorect for testing purposes but need to be updated to match bash!!
 int	validate_input(t_token *tokens)
- {
-    t_token *current = tokens;
-    int token_count = 0;
+{
+	t_token *current = tokens;
+	int token_count;
 
+	token_count = 0;
     // Check for empty input (null or no tokens)
     if (!current) {
         return 1; // Empty prompt for no tokens
-    }
-
-    // Check if the first token is an operator
-    if (current->value[0] == '|' || current->value[0] == '<' || current->value[0] == '>') {
-        fprintf(stderr, "Syntax error: Operator at the start of input\n");
-        return 0;
-    }
-
-    while (current) {
-        token_count++;
-
-        // Check for invalid consecutive operators
-        if ((current->value[0] == '<' || current->value[0] == '>' || current->value[0] == '|'))
+	}
+	if (current->value[0] == '|' || current->value[0] == '<' || current->value[0] == '>')
+	{
+		printf("Syntax error: Operator at the start of input\n");
+		return (0);
+	}
+	while (current)
+	{
+		token_count++;
+		if ((current->value[0] == '<' || current->value[0] == '>' || current->value[0] == '|'))
 		{
-            if (current->next && (current->next->value[0] == '<' || current->next->value[0] == '>' || current->next->value[0] == '|'))
+			if (current->next && (current->next->value[0] == '<' || current->next->value[0] == '>' || current->next->value[0] == '|'))
 			{
-                // Allow valid redirection chains
-                if (!(current->value[0] == '>' && current->next->value[0] == '>') &&
-                    !(current->value[0] == '<' && current->next->value[0] == '<'))
+				if (!(current->value[0] == '>' && current->next->value[0] == '>') &&
+					!(current->value[0] == '<' && current->next->value[0] == '<'))
 				{
-                    printf("syntax error Invalid sequence '%s %s'\n", current->value, current->next->value);
-                    return 0;
-                }
-            }
-        }
-
-        // Check for missing arguments after a redirection operator
-        if ((current->value[0] == '<' || current->value[0] == '>'))
+				printf("syntax error Invalid sequence '%s %s'\n", current->value, current->next->value);
+					return (0);
+				}
+			}
+		}
+		if ((current->value[0] == '<' || current->value[0] == '>'))
 		{
-            if (!current->next || !current->next->value[0]
+			if (!current->next || !current->next->value[0]
 				|| current->next->value[0] == '|'
 				|| current->next->value[0] == '<'
 				|| current->next->value[0] == '>')
 			{
-                printf("syntax error Missing argument after '%s'\n", current->value);
-                return 0;
-            }
-        }
-
-        current = current->next; // Move to the next token
-    }
-
-    // Check if the last token is an operator
+				printf("syntax error Missing argument after '%s'\n", current->value);
+				return (0);
+			}
+		}
+		current = current->next;
+	}
     if (tokens)
 	{
         t_token *last = tokens;
@@ -129,7 +124,7 @@ int	validate_input(t_token *tokens)
             printf("Syntax error: Operator at the end of input\n");
             return 0;
         }
-    }
+	}
 
-    return (1); // Input passed validation
+	return (1); // Input passed validation
 }

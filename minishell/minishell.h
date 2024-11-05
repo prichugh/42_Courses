@@ -79,7 +79,7 @@ t_token	*new_token(e_token_type type, char *value);
 void 	handle_buffer(t_data *data, e_token_type token_type);
 //void	add_token_to_list(t_token **token_list, t_token *new_token);
 void	add_token_to_list(t_data *data, t_token *new_token);
-void	add_token(t_data *data, int token_type, char *value);
+//void	add_token(t_data *data, int token_type, char *value);
 
 
 //------start_program.c-------//

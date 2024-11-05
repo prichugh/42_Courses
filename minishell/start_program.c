@@ -1,11 +1,14 @@
 #include "minishell.h"
 
+
+// Repeatedly prompts for user input, tokenizes, validates, and processes commands.
+// Exits the loop if "exit" or EOF is detected, handling cleanup and history appropriately.
 void	start_program(t_data *data)
 {
 	char			*input;
-	t_token			*tokens;
+	// t_token			*tokens;
 
-	tokens = data->head;
+	// tokens = data->head;
 	signal(SIGINT, handle_sigint); // Set the signal handler for ctrl+c, ctrl+d, and ctr+\"
 	while (1)
 	{
@@ -26,8 +29,8 @@ void	start_program(t_data *data)
 		tokenize(input, data);
 		if (validate_input(data->head))
 		{
-			//classify_token_types(data->head); NEXT STEPS
-			replace_env_variables_in_tokens(tokens, data);
+			//classify_token_types(data); //NEXT STEPS
+			replace_env_variables_in_tokens(data->head, data);
 			print_tokens(data->head);
 			free_tokens(data->head);
 		}

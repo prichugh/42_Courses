@@ -61,7 +61,6 @@ void replace_env_variables_in_tokens(t_token *tokens, t_data *data)
 
 	while (tokens)
 	{
-		printf("testing\n");
 		if (tokens->type == TOKEN_WORD)
 		{
 			new_value = replace_variables_in_string(tokens->value, data);

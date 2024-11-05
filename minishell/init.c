@@ -1,5 +1,6 @@
 #include "minishell.h"
 
+// Initializes the fields of the t_data struct for starting a new shell instance.
 void	struct_init(t_data *shell)
 {
 	//shell->arg = "cat";
@@ -11,6 +12,7 @@ void	struct_init(t_data *shell)
 	shell->in_single_quote = 0;
 }
 
+// Resets specific fields in t_data struct to prepare for processing a new command.
 void	reset_data(t_data *data)
 {
 	data->head = NULL;
